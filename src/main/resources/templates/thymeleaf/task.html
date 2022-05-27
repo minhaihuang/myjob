@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml" xmlns:method="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<form th:action="@{/task/add}" th:object="${taskDto}" th:method="post"><!--表单提交-->
+    名称：<input type="text" th:field="*{taskName}"/><!--th:field="*{name}"相当于id="name" name="name" value="具体的name值"-->
+    class：<input type="text" th:field="*{taskClass}"/>
+    method：<input type="text" th:field="*{taskMethod}"/>
+    cron：<input type="text" th:field="*{cron}"/>
+    <input type="submit"/>
+</form>
+<hr/>
+<table border="1">
+    <tr>
+        <th>序号</th>
+        <th>任务名称</th>
+        <th>class</th>
+        <th>方法</th>
+        <th>cron表达式</th>
+        <th>状态</th>
+        <th>操作</th>
+    </tr>
+    <tr th:each="task,userStat:${taskList}">
+        <td th:text="${userStat.index} + 1"></td>
+        <td th:text="${task.taskName}"></td>
+        <td th:text="${task.taskClass}"></td>
+        <td th:text="${task.taskMethod}"></td>
+        <td th:text="${task.cron}"></td>
+        <td th:text="${task.status gt 0} ? start : stop"></td>
+        <td>
+            <button th:text="${task.status gt 0} ? 停止 : 启动"
+                    th:onclick="del([[${userStat.index}]])">
+            </button>
+            </td>
+    </tr>
+</table>
+</body>
+<script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+<script type="application/javascript">
+    function del(index) {
+        $.ajax({
+            type: "GET",
+            data: {index: index},
+            url: "/task/operate",
+            success: function (data) {
+                if (data == "true") {
+                    alert("操作成功")
+                    window.location.href = ("/task/list");
+                } else {
+                    alert("操作失败");
+                }
+            },
+            error: function (data) {
+                alert("操作失败");
+            }
+        });
+    }
+</script>
+</html>
