@@ -1,6 +1,6 @@
 package com.hhm.myjob.dto;
 
-import com.hhm.myjob.scheduler.CustomTaskScheduler2;
+import com.hhm.myjob.scheduler.CustomTaskScheduler;
 import lombok.Data;
 
 /**
@@ -21,5 +21,5 @@ public class TargetAndSchedulerDto {
     private Object target;
 
     // 任务调度器
-    private CustomTaskScheduler2 customTaskScheduler;
+    private CustomTaskScheduler customTaskScheduler;
 }

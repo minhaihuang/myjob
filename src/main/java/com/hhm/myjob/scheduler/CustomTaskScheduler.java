@@ -1,9 +1,10 @@
 package com.hhm.myjob.scheduler;
 
+import org.springframework.core.task.TaskRejectedException;
 import org.springframework.scheduling.Trigger;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.scheduling.support.ScheduledMethodRunnable;
-import org.springframework.stereotype.Component;
+import org.springframework.scheduling.support.TaskUtils;
 import org.springframework.util.ErrorHandler;
 import org.springframework.util.concurrent.ListenableFuture;
 
@@ -14,6 +15,7 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -24,18 +26,28 @@ import java.util.concurrent.ThreadFactory;
  * @Author huanghm
  * @Date 2022/5/12
  */
-@Component
-public class CustomTaskScheduler  extends ThreadPoolTaskScheduler {
+public class CustomTaskScheduler extends ThreadPoolTaskScheduler {
     private Map<Object, ScheduledFuture<?>> scheduledTasks = new IdentityHashMap<>();
 
     public CustomTaskScheduler() {
         super();
-        super.setPoolSize(2);
+        super.initialize();
     }
 
     @Override
     public ScheduledFuture<?> schedule(Runnable task, Trigger trigger) {
-        ScheduledFuture<?> future = super.schedule(task, trigger);
+//        ScheduledFuture<?> future = super.schedule(task, trigger);
+
+        ScheduledExecutorService executor = new ScheduledThreadPoolExecutor(1);
+        ScheduledFuture<?> future;
+        try {
+            Clock clock = Clock.systemDefaultZone();
+            ErrorHandler errorHandler = TaskUtils.getDefaultErrorHandler(true);
+            future = new MyRescheduleRunnable(task, trigger, clock, executor, errorHandler).schedule();
+        }
+        catch (RejectedExecutionException ex) {
+            throw new TaskRejectedException("Executor [" + executor + "] did not accept task: " + task, ex);
+        }
         this.putScheduledTasks(task, future);
         return future;
     }
