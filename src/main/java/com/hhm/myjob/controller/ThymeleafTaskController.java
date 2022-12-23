@@ -1,5 +1,6 @@
 package com.hhm.myjob.controller;
 
+import com.hhm.myjob.util.SpringBeanUtil;
 import com.hhm.myjob.dto.TargetAndSchedulerDto;
 import com.hhm.myjob.dto.TaskDto;
 import com.hhm.myjob.scheduler.CustomTaskScheduler;
@@ -86,7 +87,8 @@ public class ThymeleafTaskController {
         if(targetAndSchedulerDto.getCustomTaskScheduler() == null && targetAndSchedulerDto.getTarget() == null){
             Object o = null;
             try {
-                o = Class.forName(targetAndSchedulerDto.getClassName()).newInstance();
+                // o = Class.forName(targetAndSchedulerDto.getClassName()).newInstance();
+                o = SpringBeanUtil.getBean(Class.forName(targetAndSchedulerDto.getClassName()));
             } catch (Exception e) {
                 log.error(e.getMessage(),e);
                 throw new RuntimeException("不存在该class");
